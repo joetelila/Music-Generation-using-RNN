@@ -10,12 +10,19 @@ dispatcher = updater.dispatcher
 #2. Measure how many songs are heared again vs. how many songes ended
 #3. Measure how many likes and dislkes exits over all played songs.  
 
+emotions = [] #list containing emotions read from emotions.txt file
 new_tries = []
 likes = 0
 dislikes = 0
 new_try_counter = 0
 hear_again_counter = 0
 song_ended_counter = 0
+
+def readFile(name,l):
+    f = open(name, "r")
+    l = f.read()
+    print(l)
+    return l
 
 #This command is activated by user (admin).
 #It should create a measure file, where all the values from 1-3 (see above) are inserted.
@@ -32,6 +39,8 @@ def askAgain(update: Update, context: CallbackContext):
 #He then generates and plays the song.
 #While the song is playing ask the user if he likes the song.
 def startCommand(update: Update, context: CallbackContext): 
+     readFile("emotions.txt",emotions)
+     #-----TODO----- transfer emotions list to Yoannis 
      buttons_vote = [[KeyboardButton("👍", callback_data="yes")], [KeyboardButton("👎", callback_data="no")]]
      context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=ReplyKeyboardMarkup(keyboard = buttons_vote, one_time_keyboard =True), text="Here is your song. Do you like the song?")
 

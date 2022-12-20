@@ -1,6 +1,7 @@
 from bot_measure import *
 from PrologConsult import startPsychologist
 
+#starts dylan bot
 startPsychologist()
 
 dispatcher.add_handler(CommandHandler("start", startCommand))
