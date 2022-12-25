@@ -4,7 +4,7 @@ common_member(L1,L2) :-
 	member(E,L2).
 
 read_KB(K) :-
-    csv_read_file("country.csv", Rows, [separator(0';)]),
+    csv_read_file("/Users/JoeKifle/Documents/EDU/Pisa_2020_2021/Semester_1/AIF_22/Music-Generation-using-RNN/prolog/country.csv", Rows, [separator(0';)]),
     maplist(arg(1), Rows, Names),
     maplist(atom_string, Names, K).
 
