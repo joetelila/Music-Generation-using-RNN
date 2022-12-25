@@ -1,6 +1,7 @@
 from telegram import *
 from telegram.ext import * 
 from requests import *
+from pyswig import 
 
 updater = Updater(token="5693702383:AAFuKkrPlxNfuC_1O8eyEzoZBMq2nyn75wk")
 dispatcher = updater.dispatcher
@@ -20,10 +21,14 @@ def messageHandler(update: Update, context: CallbackContext):
     global selecting
     global likes, dislikes
     user_input = update.message.text
-
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Your keywords are: {selecting}")  
+    context.bot.send_voice(chat_id=update.effective_chat.id, voice=open('test_auid.wav', 'rb'))  
+    #context.bot.send_audio(chat_id=update.effective_chat.id, audio=open('test_auid.wav', 'rb'))  
+        
     if checkEmotionInput(user_input) == True:
         selecting.append(user_input)
-        print(selecting)
+        # send audio file.
+        
     
     if "I finished my choice" in user_input or "same keywords" in user_input:
         selecting = []
