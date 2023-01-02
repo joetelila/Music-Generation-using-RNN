@@ -1,0 +1,7 @@
+outputs/*
+soundfont/*
+dataset/*
+dataset_2/*
+music_gen/*
+midi_gen/*
+test.py

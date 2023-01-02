@@ -1,14 +1,15 @@
+import time
 from telegram import *
 from telegram.ext import * 
+import telegram
 from requests import *
 # import pyswig
 from pyswip import Prolog
-
+from music_generator import MusicGenerator
 updater = Updater(token="5693702383:AAFuKkrPlxNfuC_1O8eyEzoZBMq2nyn75wk")
 dispatcher = updater.dispatcher
 
 bot_commands = ["start","👍","👎","Generate another song"] 
-
 likes = 0
 dislikes = 0
 new_try_counter = 0
@@ -26,6 +27,13 @@ def readFile(name,l):
 # consults the prolog file
 prolog = Prolog()
 prolog.consult("prolog/collectEmotionsTWO.pl")
+
+
+# Music generator.
+sound_font_path = "/Users/JoeKifle/Documents/EDU/Pisa_2020_2021/Semester_1/AIF_22/Music-Generation-using-RNN/soundfont/FluidR3_GM.sf2"
+sampling_rate = 16000
+model_path = "models/model.h5"
+mus_gen = MusicGenerator(model_path, sampling_rate, sound_font_path)
 
 #This command is activated by user (admin).
 #It should create a measure file, where all the values from 1-3 (see above) are inserted.
@@ -47,14 +55,21 @@ def startCommand(update: Update, context: CallbackContext):
 def messageHandler(update: Update, context: CallbackContext):
     global likes, dislikes, new_tries, song_counter, new_try_counter,curr_emotion
     user_input = update.message.text
+    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.TYPING)
+    time.sleep(2)
     if user_input not in bot_commands:
         _query = "helpme(S,'"+str(user_input)+"')."
         query_res = list(prolog.query(_query))
         for _res in query_res:
             _temp_res = _res['S'].decode('utf8').split("$")
+
             if len(_temp_res)>1:
                 curr_emotion = _temp_res[1]
-                context.bot.send_voice(chat_id=update.effective_chat.id, voice=open('test_auid.wav', 'rb'))
+                print("Generating song with emotion: "+curr_emotion)
+                context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.RECORD_AUDIO)
+                music_midi = mus_gen.generate(_temp_res[0], 100)
+                music_audio = mus_gen.convert_to_audio(music_midi)
+                context.bot.send_voice(chat_id=update.effective_chat.id, voice=open(music_audio, 'rb'))
                 song_counter = song_counter + 1
                 startCommand(update, context)
             context.bot.send_message(chat_id=update.effective_chat.id, text=_res['S'].decode('utf8'))
@@ -91,7 +106,7 @@ def messageHandler(update: Update, context: CallbackContext):
          with open("example.txt", "w") as f:
               f.write("Number of all likes: " + str(likes) + '\n')
               f.write("Number of all dislikes: " + str(dislikes)+ '\n')
-              f.write("Percentage of all new tries: " str((new_try_counter / (likes + dislikes))* 100) + '\n')
+              f.write("Percentage of all new tries: "+str((new_try_counter / (likes + dislikes))* 100) + '\n')
               f.write("Number of all new tries: " + str(new_try_counter))
 
 def queryHandler(update: Update, context: CallbackContext):
