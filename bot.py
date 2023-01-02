@@ -67,7 +67,7 @@ def messageHandler(update: Update, context: CallbackContext):
                 curr_emotion = _temp_res[1]
                 print("Generating song with emotion: "+curr_emotion)
                 context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.RECORD_AUDIO)
-                music_midi = mus_gen.generate(_temp_res[0], 100)
+                music_midi = mus_gen.generate(_temp_res[0], 100, update.effective_chat.id,context)
                 music_audio = mus_gen.convert_to_audio(music_midi)
                 context.bot.send_voice(chat_id=update.effective_chat.id, voice=open(music_audio, 'rb'))
                 song_counter = song_counter + 1
