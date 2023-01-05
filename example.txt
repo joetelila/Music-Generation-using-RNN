@@ -1,0 +1,4 @@
+Number of all likes: 1
+Number of all dislikes: 1
+Percentage of all new tries: 0.0
+Number of all new tries: 0

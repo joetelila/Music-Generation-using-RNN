@@ -50,13 +50,17 @@ def askAgain(update: Update, context: CallbackContext):
 def startCommand(update: Update, context: CallbackContext):
      #-----TODO----- transfer emotions list to Yoannis 
      buttons_vote = [[KeyboardButton("👍", callback_data="yes")], [KeyboardButton("👎", callback_data="no")]]
-     context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=ReplyKeyboardMarkup(keyboard = buttons_vote, one_time_keyboard =True), text="Here is your song. Do you like the song?")
+     context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=ReplyKeyboardMarkup(keyboard = buttons_vote, one_time_keyboard =True), text="Here is your song to match your emotion. Do you like the song?")
         
 def messageHandler(update: Update, context: CallbackContext):
     global likes, dislikes, new_tries, song_counter, new_try_counter,curr_emotion
     user_input = update.message.text
     context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.TYPING)
-    time.sleep(2)
+    time.sleep(1)
+    # convert user input to lower case and check if it hello
+    if user_input.lower() == "hello":
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, how are you?")
+        return
     if user_input not in bot_commands:
         _query = "helpme(S,'"+str(user_input)+"')."
         query_res = list(prolog.query(_query))
@@ -65,14 +69,14 @@ def messageHandler(update: Update, context: CallbackContext):
 
             if len(_temp_res)>1:
                 curr_emotion = _temp_res[1]
-                print("Generating song with emotion: "+curr_emotion)
                 context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.RECORD_AUDIO)
-                music_midi = mus_gen.generate(_temp_res[0], 100, update.effective_chat.id,context)
+                music_midi = mus_gen.generate(_temp_res[0], 100, update.effective_chat.id,context,curr_emotion)
                 music_audio = mus_gen.convert_to_audio(music_midi)
                 context.bot.send_voice(chat_id=update.effective_chat.id, voice=open(music_audio, 'rb'))
                 song_counter = song_counter + 1
                 startCommand(update, context)
-            context.bot.send_message(chat_id=update.effective_chat.id, text=_res['S'].decode('utf8'))
+            if not len(_temp_res)>1:
+                context.bot.send_message(chat_id=update.effective_chat.id, text=_res['S'].decode('utf8'))
             
             #context.bot.send_message(chat_id=update.effective_chat.id, text=_res["S"])
             #break

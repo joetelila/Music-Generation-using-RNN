@@ -15,6 +15,7 @@ class MusicGenerator:
         # load model
         print("Loading model...")
         self.model = load_model("models/music_generator_lstm_0149.h5")
+        self.model_sad = load_model("models/music_generator_lstm_0149.h5")
         print("Model loaded")
         self.sampling_rate = sampling_rate
         self.sound_font = sound_font
@@ -29,7 +30,7 @@ class MusicGenerator:
         return load_data
 
 
-    def generate(self, seed_text, duration=100,chat_id=None,context=None):
+    def generate(self, seed_text, duration=100,chat_id=None,context=None,emotion=None):
         
         print("seed_Text: ", seed_text,chat_id)
         # pick a random sequence from the input as a starting point for the prediction
@@ -39,12 +40,16 @@ class MusicGenerator:
         predicted_outputs = []
 
         # generate 500 notes
+        
         for indx in range(duration):
             inp_seq = np.reshape(seed_pattern , (1, len(seed_pattern), 1))   # convert to desired input shape for model
             inp_seq = inp_seq/float(self.n_vocab)  # normalize
             if indx%10==0:
                 context.bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.RECORD_AUDIO)
-            prediction = self.model.predict(inp_seq) #self.model_inputs[np.random.randint(0 , len(self.model_inputs)-1)]#model.predict(inp_seq)
+            if emotion == "gen_sad":
+                prediction = self.model_sad.predict(inp_seq) #self.model_inputs[np.random.randint(0 , len(self.model_inputs)-1)]#model.predict(inp_seq)
+            else:
+                prediction = self.model.predict(inp_seq) #self.model_inputs[np.random.randint(0 , len(self.model_inputs)-1)]#model.predict(inp_seq)
             pred_idx = np.argmax(prediction)
             pred_note = self.int_to_note[pred_idx]
             
@@ -83,7 +88,7 @@ class MusicGenerator:
                 new_note.storedInstrument = instrument.Piano()
                 output_notes.append(new_note) 
                 
-            offset += random.choice([0.5,1,2])   # Duration
+            offset += random.choice([0.5,1])   # Duration
 
 
         midi_stream = stream.Stream(output_notes)
@@ -94,6 +99,6 @@ class MusicGenerator:
     def convert_to_audio(self, midi_file_path):
         # call fluidsynth and pass midi to get wav file.
         # fluidsynth -ni soundfont.sf2 -F output.wav input.mid
-        auio_path = str("music_gen/"+str(midi_file_path.split(".")[0]) + '.wav')
-        FluidSynth(self.sound_font, self.sampling_rate).midi_to_audio(str("midi_gen/"+midi_file_path),auio_path)
-        return auio_path
+        audio_path = str("music_gen/"+str(midi_file_path.split(".")[0]) + '.wav')
+        FluidSynth(self.sound_font, self.sampling_rate).midi_to_audio(str("midi_gen/"+midi_file_path),audio_path)
+        return audio_path
